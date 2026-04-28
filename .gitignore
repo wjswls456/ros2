@@ -1,0 +1,27 @@
+# ROS2 빌드 산출물
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ROS bag 파일 (용량 큼)
+*.bag
+*.db3
+
+# 측정 데이터 (필요한 것만 별도 추가)
+*.csv
+!results/*.csv
