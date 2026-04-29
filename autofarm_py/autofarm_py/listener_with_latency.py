@@ -25,7 +25,6 @@ class LatencyListener(Node):
         latency_us = (recv_ns - sent_ns) / 1000.0
         self.latencies_us.append(latency_us)
 
-
         # 50개마다 누적 통계 출력
         if len(self.latencies_us) % 50 ==0:
             self._print_status()
@@ -56,7 +55,7 @@ def main():
     except KeyboardInterrupt:
         node.get_logger().info('=== Final Statistics ===')
         if node.latencies_us:
-            node._print_stats()
+            node._print_status()
             node.save_csv()
         else:
             print('No messages received.')
