@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'autofarm_py'
 
@@ -10,6 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -25,7 +28,11 @@ setup(
     entry_points={
         'console_scripts': [
             'talker_ts = autofarm_py.talker_with_timestamp:main' ,
-            'listener_lat = autofarm_py.listener_with_latency:main'
+            'listener_lat = autofarm_py.listener_with_latency:main',
+            'qos_talker = autofarm_py.qos_talker:main',
+            'qos_listener = autofarm_py.qos_listener:main',
+            'latency_talker = autofarm_py.latency_talker:main',
+            'latency_listener = autofarm_py.latency_listener:main',
         ],
     },
 )
