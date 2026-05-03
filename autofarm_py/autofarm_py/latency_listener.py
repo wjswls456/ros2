@@ -8,6 +8,7 @@ Latency Listener - Day 4
 
 import os
 import rclpy
+import csv
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from autofarm_interfaces.msg import LatencyMsg
@@ -42,6 +43,14 @@ class LatencyListener(Node):
         self.received = 0
 
         self.get_logger().info( f'LatencyListener started — reliability={self.reliability_str}, depth={self.depth}')
+
+        self.declare_parameter('duration_sec', 0.0)
+        duration=self.get_parameter('duration_sec').value
+
+        # ─── Day 5 추가: 자동 종료 기능 ───
+        if duration is not None and duration > 0:
+            self.shutdown_timer = self.create_timer(duration, self._shutdown)
+            self.get_logger().info(f'Auto-shutdown after {duration}s')
 
     def callback(self,msg):
         recv_ns = self.get_clock().now().nanoseconds
@@ -87,7 +96,7 @@ class LatencyListener(Node):
 
     def save_csv(self):
         os.makedirs(self.output_dir, exist_ok=True)
-        path = f'{self.output_dir}/day4_{self.reliability_str}_d{self.depth}.csv'
+        path = f'{self.output_dir}/day5_{self.reliability_str}_d{self.depth}.csv'
         with open(path, 'w', newline='') as f:
             w = csv.writer(f)
             w.writerow([f'# reliability={self.reliability_str}, depth={self.depth}'])
@@ -96,6 +105,16 @@ class LatencyListener(Node):
             for i, lat in enumerate(self.latencies_us):
                 w.writerow([i, f'{lat:.3f}'])
         self.get_logger().info(f'Saved CSV to {path}')
+
+    def _shutdown(self):
+        """duration_sec 도달 시 호출. 통계 + CSV 저장 + 종료."""
+        self.get_logger().info('=== Final Statistics (auto-shutdown) ===')
+        if self.latencies_us:
+            self._print_status()
+            self.save_csv()
+        else:
+            self.get_logger().warn('No messages received during measurement')
+        rclpy.shutdown()
 
 
 def main():
@@ -111,7 +130,10 @@ def main():
         else:
             node.get_logger().warn('No messages received. Qos 호환성 또는 토픽 이름 확인 필요')
     node.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.shutdown()
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

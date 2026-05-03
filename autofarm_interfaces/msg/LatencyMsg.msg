@@ -1,0 +1,2 @@
+uint32 seq
+builtin_interfaces/Time stamp

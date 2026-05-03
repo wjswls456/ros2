@@ -5,12 +5,18 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from std_msgs.msg import String
+import os
 
 class QosLatencyListener(Node):
     def __init__(self):
         super().__init__('qos_latency_listener')
-    # talker와 동일하게 파라미터로 QoS를 받는다
-    # 중요: Pub/Sub QoS가 호환되지 않으면 메시지 자체가 안 옴 (Q5 참조)
+
+        # 검사 로그 파일 경로 지정
+
+        self.declare_parameter('output_dir', '/home/wjswls/autofarm_ws/ros2_logs')
+        self.output_dir = self.get_parameter('output_dir').value
+        # talker와 동일하게 파라미터로 QoS를 받는다
+        # 중요: Pub/Sub QoS가 호환되지 않으면 메시지 자체가 안 옴 (Q5 참조)
 
         self.declare_parameter('reliability', 'reliable')
         self.declare_parameter('depth', 10)
@@ -101,7 +107,8 @@ class QosLatencyListener(Node):
     def save_csv(self):
         # 파일명에 QoS 정보를 박아서 4개 조합 결과가 안 섞이게 한다
         # 예: /tmp/day2_best_effort_d1.csv
-        path = f'/tmp/day2_{self.reliability_str}_d{self.depth}.csv'
+        os.makedirs(self.output_dir, exist_ok=True)  # 폴더 없으면 생성
+        path = f'{self.output_dir}/day2_{self.reliability_str}_d{self.depth}{self.get_clock().now()}.csv'
         with open(path, 'w', newline='') as f:
             w = csv.writer(f)
             # 메타데이터는 첫 두 줄에 주석으로 (pandas로 읽을 때 skiprows=2)
